@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,11 +13,15 @@
     <div class="sidebar"></div>
     <div class="main">
         <div class="newtask">
-            <button>ye</button>
+            <button>New task</button>
         </div>
         <div class="tasks">
-            <div id="task1">Task 1</div>
-            <div id="task2">Task 2</div>
+            <div class="task" id="task1">
+                <div class="name">Get gift for cam</div>
+                <div class="description">pick it up at hillside</div>
+                <div class="duedate">today or tomorrow</div>
+                <div class="priority">high</div>
+            </div>
         </div>
     </div>
     
