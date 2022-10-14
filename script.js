@@ -27,7 +27,11 @@ const taskMaster = {
 }
 
 const Dom = (function () {
-    let tasks = document.querySelector('.tasks')
+    const tasks = document.querySelector('.tasks')
+    const form = document.querySelector('.form')
+    const newTaskBtn = document.querySelector('.newtask button')
+    const formDisplay = document.querySelector('.form-popup');
+    const formXBtn = document.querySelector('.x');
     
     const newTask = function (task) {
         const newtask = document.createElement('div')
@@ -66,32 +70,39 @@ const Dom = (function () {
         let deletedtask = document.getElementById(id)
         deletedtask.remove();
     }
-    return { newTask, removeTask, loadTaskList}
+
+    const loadListeners = function () {
+        form.addEventListener('submit', (event) => {
+            let name = (form.elements['name'].value);
+            let description = (form.elements['description'].value);
+            let duedate = (form.elements['duedate'].value);
+            let priority = (form.elements['priority'].value);
+            let t = taskMaster.task(name, description, duedate, priority);
+
+            event.preventDefault();
+            taskMaster.addTask(t);
+            form.reset();
+            formDisplay.style.display = "none";
+            loadTaskList(taskMaster.taskList);
+        })
+
+        newTaskBtn.addEventListener('click', () => {
+            formDisplay.style.display = "grid";
+        })
+
+        formXBtn.addEventListener('click', () => {
+            formDisplay.style.display = "none";
+        })
+    }
+
+    return { newTask, removeTask, loadTaskList, loadListeners }
 })();
 
-const newTaskBtn = document.querySelector('.newtask button')
-newTaskBtn.addEventListener('click', (e) => {
-    formdisplay.style.display = "grid";
-})
+Dom.loadListeners();
 
-let form = document.querySelector('.form');
-form.addEventListener('submit', (event) => {
-    let name = (form.elements['name'].value);
-    let description = (form.elements['description'].value);
-    let duedate = (form.elements['duedate'].value);
-    let priority = (form.elements['priority'].value);
 
-    event.preventDefault();
-    let t = taskMaster.task(name, description, duedate, priority);
-    taskMaster.addTask(t);
-    form.reset();
-    formdisplay.style.display = "none";
-    Dom.loadTaskList(taskMaster.taskList);
-})
 
-let formdisplay = document.querySelector('.form-popup');
-let xbtn = document.querySelector('.x');
-xbtn.addEventListener('click', () => {
-    formdisplay.style.display = "none";
-})
+
+
+
 
