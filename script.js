@@ -1,13 +1,16 @@
 const taskMaster = {
-    'currentID': -1,
-    'tasklist': {},
-    addTask() {
-        taskMaster.currentID++
-        taskMaster.tasklist[taskMaster.currentID] = taskMaster.task(taskMaster.currentID, 'Car', 'Pick up car before 6pm at CDN tire', 'today', 'high')
-        return taskMaster.tasklist[taskMaster.currentID]
+    projectList: [],
+    taskList: [],
+
+    addProject(project) {
+        this.projectList.push(project)
     },
 
-    task(id, name, description, dueDate, priority) {
+    addTask(task) {
+        this.taskList.push(task)
+    },
+
+    task(name, description, dueDate, priority) {
     
         const getName = () => name;
         const getDescription = () => description;
@@ -19,7 +22,7 @@ const taskMaster = {
         const setDueDate = (newDueDate) => dueDate = newDueDate;
         const setPriority = (newPriority) => priority = newPriority;
 
-        return {id, getName, setName, getDescription, setDescription, getDueDate, setDueDate, getPriority, setPriority }
+        return {getName, setName, getDescription, setDescription, getDueDate, setDueDate, getPriority, setPriority }
     }
 }
 
@@ -29,7 +32,6 @@ const Dom = (function () {
     const newTask = function (task) {
         const newtask = document.createElement('div')
         newtask.classList.add('task')
-        newtask.id = task.id
         tasks.appendChild(newtask)
 
         const divName = document.createElement('div')
@@ -53,17 +55,43 @@ const Dom = (function () {
         newtask.appendChild(divPriority)
     }
 
+    const loadTaskList = function (taskList) {
+        tasks.innerHTML = "";
+        taskList.forEach(task => {
+            newTask(task);
+        });
+    }
+
     const removeTask = function (id) {
         let deletedtask = document.getElementById(id)
         deletedtask.remove();
     }
-    return { newTask, removeTask}
+    return { newTask, removeTask, loadTaskList}
 })();
 
-
-
 const newTaskBtn = document.querySelector('.newtask button')
-newTaskBtn.addEventListener('click', (e) => {e
-    Dom.newTask(taskMaster.addTask())
+newTaskBtn.addEventListener('click', (e) => {
+    formdisplay.style.display = "grid";
+})
+
+let form = document.querySelector('.form');
+form.addEventListener('submit', (event) => {
+    let name = (form.elements['name'].value);
+    let description = (form.elements['description'].value);
+    let duedate = (form.elements['duedate'].value);
+    let priority = (form.elements['priority'].value);
+
+    event.preventDefault();
+    let t = taskMaster.task(name, description, duedate, priority);
+    taskMaster.addTask(t);
+    form.reset();
+    formdisplay.style.display = "none";
+    Dom.loadTaskList(taskMaster.taskList);
+})
+
+let formdisplay = document.querySelector('.form-popup');
+let xbtn = document.querySelector('.x');
+xbtn.addEventListener('click', () => {
+    formdisplay.style.display = "none";
 })
 
