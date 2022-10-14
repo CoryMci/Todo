@@ -14,6 +14,10 @@ const taskMaster = {
         this.taskList.push(task)
     },
 
+    removeTask(index) {
+        this.taskList.splice(index, 1)
+    },
+
     task(name, description, dueDate, priority) {
     
         const getName = () => name;
@@ -30,16 +34,17 @@ const taskMaster = {
     }
 }
 
-const Dom = (function () {
+const Ui = (function () {
     const tasks = document.querySelector('.tasks')
     const form = document.querySelector('.form')
     const newTaskBtn = document.querySelector('.newtask button')
     const formDisplay = document.querySelector('.form-popup');
     const formXBtn = document.querySelector('.x');
     
-    const newTask = function (task) {
+    const newTask = function (task, index) {
         const newtask = document.createElement('div')
         newtask.classList.add('task')
+        newtask.classList.add(task.getPriority())
         tasks.appendChild(newtask)
 
         const divName = document.createElement('div')
@@ -57,16 +62,29 @@ const Dom = (function () {
         divDueDate.textContent = task.getDueDate()
         newtask.appendChild(divDueDate)
 
-        const divPriority = document.createElement('div')
-        divPriority.classList.add('priority')
-        divPriority.textContent = task.getPriority()
-        newtask.appendChild(divPriority)
+        const divTaskTools = document.createElement('div')
+        divTaskTools.classList.add('tasktools')
+        newtask.appendChild(divTaskTools)
+
+        const deleteTaskBtn = document.createElement('span')
+        deleteTaskBtn.classList.add('material-symbols-outlined', 'deletetask')
+        deleteTaskBtn.textContent = 'delete'
+        divTaskTools.appendChild(deleteTaskBtn)
+
+        deleteTaskBtn.addEventListener('click', () => {
+            taskMaster.removeTask(index);
+            loadTaskList(taskMaster.taskList);
+        })
+            
+
+        console.log(index);
     }
 
     const loadTaskList = function (taskList) {
+        //taskList must be array of tasks
         tasks.innerHTML = "";
         taskList.forEach(task => {
-            newTask(task);
+            newTask(task, taskList.indexOf(task));
         });
     }
 
@@ -102,7 +120,7 @@ const Dom = (function () {
     return { newTask, removeTask, loadTaskList, loadListeners }
 })();
 
-Dom.loadListeners();
+Ui.loadListeners();
 
 
 
