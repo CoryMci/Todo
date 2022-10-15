@@ -3,34 +3,44 @@ import './fontstyle.css';
 
 
 const taskMaster = {
-    projectList: [],
-    taskList: [],
-
-    addProject(project) {
-        this.projectList.push(project)
+    projList: {
+        'default':[
+        { name: 'vote', description: 'Go to gordon head and vote', dueDate: 'Today', priority: 'high', project: 'default' },
+        { name: 'ToDo Project', description: 'Add in a bunch of code', dueDate: 'This week', priority: 'high', project: 'coding' },
+        { name: 'Pomodoro Project', description: 'Add some graphs and shit', dueDate: 'This month', priority: 'medium', project: 'coding' }
+    ]
     },
 
-    addTask(task) {
-        this.taskList.push(task)
+
+    addTask(task, project='default') {
+        if (!Object.hasOwn(this.projList, project)) {
+            Object.defineProperty(this.projList, project, task)
+        } else {
+            console.log('check')
+            this.projList[project].push(task);
+            console.log(this.projList[project]);
+        }
     },
 
-    removeTask(index) {
-        this.taskList.splice(index, 1)
+    removeTask(project, index) {
+        console.log(project, index);
+        this.projList[project].splice(index, 1)
     },
 
     task(name, description, dueDate, priority) {
+        return {name, description, dueDate, priority}
     
-        const getName = () => name;
-        const getDescription = () => description;
-        const getDueDate = () => dueDate;
-        const getPriority = () => priority;
+        // const getName = () => name;
+        // const getDescription = () => description;
+        // const getDueDate = () => dueDate;
+        // const getPriority = () => priority;
 
-        const setName = (newName) => name = newName;
-        const setDescription = (newDescription) => description = newDescription;
-        const setDueDate = (newDueDate) => dueDate = newDueDate;
-        const setPriority = (newPriority) => priority = newPriority;
+        // const setName = (newName) => name = newName;
+        // const setDescription = (newDescription) => description = newDescription;
+        // const setDueDate = (newDueDate) => dueDate = newDueDate;
+        // const setPriority = (newPriority) => priority = newPriority;
 
-        return {getName, setName, getDescription, setDescription, getDueDate, setDueDate, getPriority, setPriority }
+        // return {getName, setName, getDescription, setDescription, getDueDate, setDueDate, getPriority, setPriority }
     }
 }
 
@@ -41,25 +51,25 @@ const Ui = (function () {
     const formDisplay = document.querySelector('.form-popup');
     const formXBtn = document.querySelector('.x');
     
-    const newTask = function (task, index) {
+    const loadTask = function (task, project, index) {
         const newtask = document.createElement('div')
         newtask.classList.add('task')
-        newtask.classList.add(task.getPriority())
+        newtask.classList.add(task['priority'])
         tasks.appendChild(newtask)
 
         const divName = document.createElement('div')
         divName.classList.add('name')
-        divName.textContent = task.getName()
+        divName.textContent = task.name
         newtask.appendChild(divName)
 
         const divDescription = document.createElement('div')
         divDescription.classList.add('description')
-        divDescription.textContent = task.getDescription()
+        divDescription.textContent = task.description
         newtask.appendChild(divDescription)
 
         const divDueDate = document.createElement('div')
         divDueDate.classList.add('duedate')
-        divDueDate.textContent = task.getDueDate()
+        divDueDate.textContent = task.dueDate
         newtask.appendChild(divDueDate)
 
         const divTaskTools = document.createElement('div')
@@ -72,28 +82,22 @@ const Ui = (function () {
         divTaskTools.appendChild(deleteTaskBtn)
 
         deleteTaskBtn.addEventListener('click', () => {
-            taskMaster.removeTask(index);
-            loadTaskList(taskMaster.taskList);
+            taskMaster.removeTask(project, index);
+            loadTaskList('default');
         })
-            
-
-        console.log(index);
     }
 
-    const loadTaskList = function (taskList) {
+    const loadTaskList = function (project) {
         //taskList must be array of tasks
         tasks.innerHTML = "";
-        taskList.forEach(task => {
-            newTask(task, taskList.indexOf(task));
+        taskMaster.projList[project].forEach(task => {
+            loadTask(task, project, taskMaster.projList[project].indexOf(task));
         });
     }
 
-    const removeTask = function (id) {
-        let deletedtask = document.getElementById(id)
-        deletedtask.remove();
-    }
-
     const loadListeners = function () {
+
+        //new task form submitted
         form.addEventListener('submit', (event) => {
             let name = (form.elements['name'].value);
             let description = (form.elements['description'].value);
@@ -105,7 +109,13 @@ const Ui = (function () {
             taskMaster.addTask(t);
             form.reset();
             formDisplay.style.display = "none";
-            loadTaskList(taskMaster.taskList);
+            loadTaskList('default');
+
+            //debug lines
+            let fart = JSON.stringify(taskMaster.projList);
+            console.log(JSON.parse(fart));
+            console.log(fart);
+            
         })
 
         newTaskBtn.addEventListener('click', () => {
@@ -117,10 +127,49 @@ const Ui = (function () {
         })
     }
 
-    return { newTask, removeTask, loadTaskList, loadListeners }
+    return { newTask: loadTask, loadTaskList, loadListeners }
 })();
 
+const storage = (function () {
+    //from MDN web docs
+    const storageAvailable = function (type) {
+        let storage;
+        try {
+            storage = window[type];
+            const x = '__storage_test__';
+            storage.setItem(x, x);
+            storage.removeItem(x);
+            return true;
+        }
+        catch (e) {
+            return e instanceof DOMException && (
+                // everything except Firefox
+                e.code === 22 ||
+                // Firefox
+                e.code === 1014 ||
+                // test name field too, because code might not be present
+                // everything except Firefox
+                e.name === 'QuotaExceededError' ||
+                // Firefox
+                e.name === 'NS_ERROR_DOM_QUOTA_REACHED') &&
+                // acknowledge QuotaExceededError only if there's something already stored
+                (storage && storage.length !== 0);
+        }
+    };
+    return {storageAvailable}
+})();
+
+
+if (storage.storageAvailable('localStorage')) {
+  // Yippee! We can use localStorage awesomeness
+}
+else {
+    taskMaster.taskList = []
+    console.log('s')
+}
+
 Ui.loadListeners();
+Ui.loadTaskList('default');
 
 
 

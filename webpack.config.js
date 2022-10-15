@@ -39,6 +39,7 @@ module.exports = {
         test: /\.wav$/,
         type: 'asset/resource',
       },
+      { test: /\.json$/, type: 'json' },
     ],
   },
   optimization: {
