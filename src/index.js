@@ -5,26 +5,53 @@ import './fontstyle.css';
 const taskMaster = {
     projList: {
         'default':[
-        { name: 'vote', description: 'Go to gordon head and vote', dueDate: 'Today', priority: 'high', project: 'default' },
-        { name: 'ToDo Project', description: 'Add in a bunch of code', dueDate: 'This week', priority: 'high', project: 'coding' },
-        { name: 'Pomodoro Project', description: 'Add some graphs and shit', dueDate: 'This month', priority: 'medium', project: 'coding' }
+        { name: 'vote', description: 'Go to gordon head and vote', dueDate: 'Today', priority: 'high'},
+        { name: 'ToDo Project', description: 'Add in a bunch of code', dueDate: 'This week', priority: 'high'},
+        { name: 'Pomodoro Project', description: 'Add some graphs and shit', dueDate: 'This month', priority: 'medium' }
     ]
     },
 
+    storeProjList() {
+        console.log(this.projList);
+        localStorage.setItem('ToDo', JSON.stringify(taskMaster.projList));
+        console.log(localStorage.getItem('ToDo'));
+        console.log(JSON.parse(localStorage.getItem('ToDo')));
+    },
 
-    addTask(task, project='default') {
+    addProject(project) {
+        //if project doesnt exist, create
+        //needs to be enumerable so JSON.stringify can read.
         if (!Object.hasOwn(this.projList, project)) {
-            Object.defineProperty(this.projList, project, task)
-        } else {
-            console.log('check')
-            this.projList[project].push(task);
-            console.log(this.projList[project]);
+            Object.defineProperty(this.projList, project, {
+                value: [],
+                enumerable: true
+            })
         }
+        else {
+            alert('A project with that name already exists!')
+        }
+
+        this.storeProjList()
+    },
+
+
+    addTask(task, project = 'default') {
+        //if project doesnt exist, create and push task in an array
+        
+        if (!Object.hasOwn(this.projList, project)) {
+            this.addProject(project);   
+        }
+
+        this.projList[project].push(task);
+        console.log(this.projList[project]);
+
+        this.storeProjList();
     },
 
     removeTask(project, index) {
         console.log(project, index);
         this.projList[project].splice(index, 1)
+        this.storeProjList();
     },
 
     task(name, description, dueDate, priority) {
@@ -83,12 +110,13 @@ const Ui = (function () {
 
         deleteTaskBtn.addEventListener('click', () => {
             taskMaster.removeTask(project, index);
-            loadTaskList('default');
+            loadTaskList(project);
         })
     }
 
     const loadTaskList = function (project) {
         //taskList must be array of tasks
+        console.log(taskMaster.projList)
         tasks.innerHTML = "";
         taskMaster.projList[project].forEach(task => {
             loadTask(task, project, taskMaster.projList[project].indexOf(task));
@@ -103,18 +131,14 @@ const Ui = (function () {
             let description = (form.elements['description'].value);
             let duedate = (form.elements['duedate'].value);
             let priority = (form.elements['priority'].value);
+            let proj = (form.elements['project'].value);
             let t = taskMaster.task(name, description, duedate, priority);
 
             event.preventDefault();
-            taskMaster.addTask(t);
+            taskMaster.addTask(t, proj);
             form.reset();
             formDisplay.style.display = "none";
-            loadTaskList('default');
-
-            //debug lines
-            let fart = JSON.stringify(taskMaster.projList);
-            console.log(JSON.parse(fart));
-            console.log(fart);
+            loadTaskList(proj);
             
         })
 
@@ -161,7 +185,8 @@ const storage = (function () {
 
 
 if (storage.storageAvailable('localStorage')) {
-  // Yippee! We can use localStorage awesomeness
+    taskMaster.projList = JSON.parse(localStorage.getItem('ToDo'));
+    console.log(taskMaster.projList)
 }
 else {
     taskMaster.taskList = []
