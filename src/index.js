@@ -1,5 +1,6 @@
 import './style.css';
 import './fontstyle.css';
+import { AsyncHook } from 'tapable';
 
 
 const taskMaster = {
@@ -20,11 +21,13 @@ const taskMaster = {
 
     addProject(project) {
         //if project doesnt exist, create
-        //needs to be enumerable so JSON.stringify can read.
         if (!Object.hasOwn(this.projList, project)) {
             Object.defineProperty(this.projList, project, {
                 value: [],
-                enumerable: true
+                enumerable: true,
+                configurable: true
+                //needs to be enumerable so JSON.stringify can read.
+                //needs to be configurable, so we can delete the property(project) if needed.
             })
         }
         else {
@@ -32,6 +35,11 @@ const taskMaster = {
         }
 
         this.storeProjList()
+    },
+
+    removeProject(project) {
+        delete this.projList[project];
+        this.storeProjList();
     },
 
 
@@ -74,9 +82,10 @@ const taskMaster = {
 const Ui = (function () {
     const tasks = document.querySelector('.tasks')
     const form = document.querySelector('.form')
-    const newTaskBtn = document.querySelector('.newtask button')
     const formDisplay = document.querySelector('.form-popup');
     const formXBtn = document.querySelector('.x');
+    const sidebar = document.querySelector('.sidebar');
+    let priorities = document.querySelectorAll(".input-priority div");
     
     const loadTask = function (task, project, index) {
         const newtask = document.createElement('div')
@@ -121,6 +130,56 @@ const Ui = (function () {
         taskMaster.projList[project].forEach(task => {
             loadTask(task, project, taskMaster.projList[project].indexOf(task));
         });
+
+        //load new task btn at end of list
+        const newTaskBtn = document.createElement('div')
+        newTaskBtn.classList.add('newtask', 'material-symbols-outlined')
+        newTaskBtn.textContent = 'add'
+        tasks.appendChild(newTaskBtn)
+        newTaskBtn.addEventListener('click', () => {
+            formDisplay.style.display = "grid";
+        })
+    }
+
+    const loadProjList = function () {
+        sidebar.textContent = ""
+        let projArray = (Object.keys(taskMaster.projList))
+        projArray.forEach(project => {
+            const divProject = document.createElement('div')
+            const divProjectTitle = document.createElement('div')
+           
+            divProject.classList.add('project')
+            divProjectTitle.textContent = project
+
+            if (!(project == 'default')) {
+                //dont allow deletion of default project
+                console.log('test');
+                const divProjectDelete = document.createElement('span')
+                divProjectDelete.classList.add('material-symbols-outlined')
+                divProjectDelete.textContent = 'delete'
+                divProject.appendChild(divProjectDelete)
+
+                divProjectDelete.addEventListener('click', () => {
+                    if (window.confirm(`Are you sure you want to delete the project "${project}"?`)) {
+                        taskMaster.removeProject(project)
+                        loadTaskList('default')
+                        loadProjList()
+                    }
+                
+            })
+            }
+
+            divProject.appendChild(divProjectTitle)
+
+            
+            sidebar.appendChild(divProject);
+
+            divProjectTitle.addEventListener('click', () => {
+                loadTaskList(project);
+            })
+
+
+        })
     }
 
     const loadListeners = function () {
@@ -130,7 +189,7 @@ const Ui = (function () {
             let name = (form.elements['name'].value);
             let description = (form.elements['description'].value);
             let duedate = (form.elements['duedate'].value);
-            let priority = (form.elements['priority'].value);
+            let priority = document.querySelector('.highlighted').id;
             let proj = (form.elements['project'].value);
             let t = taskMaster.task(name, description, duedate, priority);
 
@@ -139,11 +198,17 @@ const Ui = (function () {
             form.reset();
             formDisplay.style.display = "none";
             loadTaskList(proj);
+            loadProjList();
             
         })
 
-        newTaskBtn.addEventListener('click', () => {
-            formDisplay.style.display = "grid";
+        priorities.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            priorities.forEach((btnz) => {
+                    btnz.classList.remove("highlighted")
+            })
+            btn.classList.add('highlighted')
+            })
         })
 
         formXBtn.addEventListener('click', () => {
@@ -151,7 +216,7 @@ const Ui = (function () {
         })
     }
 
-    return { newTask: loadTask, loadTaskList, loadListeners }
+    return { newTask: loadTask, loadTaskList, loadListeners, loadProjList }
 })();
 
 const storage = (function () {
@@ -195,7 +260,7 @@ else {
 
 Ui.loadListeners();
 Ui.loadTaskList('default');
-
+Ui.loadProjList();
 
 
 
