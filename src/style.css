@@ -38,11 +38,27 @@ body {
     height: 3em;
     background-color: #525264;
     display: grid;
-    grid-template-columns: 1fr, 1em;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: 1fr;
+    align-items: center;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.sidebar .project:hover{
+    background-color: rgb(153, 153, 185);
 }
 
 .sidebar .project div {
+    height: 100%;
+    padding-top: 2em;
     text-indent: 1em;
+    grid-column: 1 / 2;
+}
+
+.sidebar .project span {
+    grid-column: 2 / 3;
+    cursor: pointer;
 }
 
 .main {
@@ -70,8 +86,12 @@ body {
     width: 90%;
     padding: 5%;
     display: grid;
-
     overflow: hidden;
+    grid-template-rows: 20% 50%
+}
+.task * {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .task.low{
@@ -133,12 +153,13 @@ body {
 }
 
 input {
+    border: none;
     background-color: #2E2E3A;
-    border: 1px solid #a2a3bb;
     border-radius: 15px;
     text-indent: 5px;
     text-align: center;
     margin: 0px 15px;
+    color:#fbf9ff;
 }
 
 input:focus {
@@ -170,14 +191,30 @@ input:focus::placeholder {
     cursor: pointer;
 }
 
+textarea {
+    resize: none;
+    background-color: #2E2E3A;
+    font-family: inherit;
+    color: inherit;
+    border: none;
+    border-top:1px solid #525264
+}
+
+textarea:focus-visible{
+    outline: none;
+}
+
 .input-name{
-height: 4em;
-grid-column: 1 / 4 ;
+    height: 4em;
+    grid-column: 1 / 4 ;
+    resize: none;
+    padding: 15px;
 }
 
 .input-description{
     height: 12em;
     grid-column: 1 / 4 ;
+    padding: 15px;
 }
 
 .input-priority{
@@ -200,6 +237,7 @@ grid-column: 1 / 4 ;
     justify-items: center;
     border-radius: 10px;
     height: 2em;
+    cursor: pointer;
 }
 
 .input-priority #low {
@@ -233,7 +271,13 @@ grid-column: 1 / 4 ;
 
 
 .input-due {
-    height: 4em;
+    display: grid;
+    text-align: center;
+}
+
+.input-project {
+    display: grid;
+    text-align: center;
 }
 
 
@@ -245,3 +289,11 @@ grid-column: 1 / 4 ;
     background-color: brown;
 }
 
+button.submit {
+    grid-column: 2 / 3;
+    margin-bottom: 5px;
+    background-color: #a2a3bb;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}

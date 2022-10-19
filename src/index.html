@@ -26,15 +26,16 @@
     <div class="form-popup">
         <form class="form" action="">
             <div class="header">
-                <div class="title">New task</div>
+                <div class="form-title">New task</div>
                 <div class="x material-symbols-outlined">close</div>
             </div>
     
-    
-            <input class="input-name" type="text" placeholder="Name" name="name" >
-    
-            <input class="input-description" type="text" placeholder="Description" name="description" >
-    
+            <label for="name">Name</label>
+            <textarea name="name" class="input-name"></textarea>
+            <!-- <input class="input-description" type="text" placeholder="Description" name="description" > -->
+            <label for="description">Description</label>
+            <textarea name="description" class="input-description"></textarea>
+
             <div class="input-priority">
                 <span>Priority</span>
                 <div id="low">Low</div>
@@ -42,11 +43,20 @@
                 <div id="high">High</div>
             </div>
 
-            <input class="input-due" type="date" placeholder="Due date" name="duedate">
+            <div class="input-due">
+                <label for="duedate">Due date</label>
+                <input type="date" placeholder="Due date" name="duedate">
+            </div>
 
-            <input class="input-project" type="text" placeholder="Project" name="project" value="default" required>
+            <div class="input-project">
+                <label for="project">Project</label>
+                <input type="text" placeholder="Project" name="project" value="default" autocomplete="off" required>
+                <datalist id="input-project-options">
+
+                </datalist>
+            </div>
     
-            <button type="submit">Add Task!</button>
+            <button class="submit" type="submit">Save</button>
         </form>
     </div>
     

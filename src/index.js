@@ -1,6 +1,7 @@
 import './style.css';
 import './fontstyle.css';
 import { AsyncHook } from 'tapable';
+import { formatWithCursor } from 'prettier';
 
 
 const taskMaster = {
@@ -15,8 +16,6 @@ const taskMaster = {
     storeProjList() {
         console.log(this.projList);
         localStorage.setItem('ToDo', JSON.stringify(taskMaster.projList));
-        console.log(localStorage.getItem('ToDo'));
-        console.log(JSON.parse(localStorage.getItem('ToDo')));
     },
 
     addProject(project) {
@@ -62,20 +61,12 @@ const taskMaster = {
         this.storeProjList();
     },
 
+    editTask(newtask, project, index) {
+        this.projList[project][index] = newtask;
+    },
+
     task(name, description, dueDate, priority) {
         return {name, description, dueDate, priority}
-    
-        // const getName = () => name;
-        // const getDescription = () => description;
-        // const getDueDate = () => dueDate;
-        // const getPriority = () => priority;
-
-        // const setName = (newName) => name = newName;
-        // const setDescription = (newDescription) => description = newDescription;
-        // const setDueDate = (newDueDate) => dueDate = newDueDate;
-        // const setPriority = (newPriority) => priority = newPriority;
-
-        // return {getName, setName, getDescription, setDescription, getDueDate, setDueDate, getPriority, setPriority }
     }
 }
 
@@ -84,8 +75,11 @@ const Ui = (function () {
     const form = document.querySelector('.form')
     const formDisplay = document.querySelector('.form-popup');
     const formXBtn = document.querySelector('.x');
+    const formTitle = document.querySelector('.form-title');
+    const formProjectOptions = document.querySelector('#input-project-options');
     const sidebar = document.querySelector('.sidebar');
-    let priorities = document.querySelectorAll(".input-priority div");
+    const priorities = document.querySelectorAll(".input-priority div");
+
     
     const loadTask = function (task, project, index) {
         const newtask = document.createElement('div')
@@ -117,9 +111,19 @@ const Ui = (function () {
         deleteTaskBtn.textContent = 'delete'
         divTaskTools.appendChild(deleteTaskBtn)
 
+        const editTaskBtn = document.createElement('span')
+        editTaskBtn.classList.add('material-symbols-outlined', 'edittask')
+        editTaskBtn.textContent = 'edit'
+        divTaskTools.appendChild(editTaskBtn)
+
         deleteTaskBtn.addEventListener('click', () => {
             taskMaster.removeTask(project, index);
             loadTaskList(project);
+        })
+
+        editTaskBtn.addEventListener('click', () => {
+            displayForm(project, task)
+            loadTaskList(project, task);
         })
     }
 
@@ -129,6 +133,7 @@ const Ui = (function () {
         tasks.innerHTML = "";
         taskMaster.projList[project].forEach(task => {
             loadTask(task, project, taskMaster.projList[project].indexOf(task));
+            //indexof can be loaded in loadtask function instead of here --refactor
         });
 
         //load new task btn at end of list
@@ -138,22 +143,49 @@ const Ui = (function () {
         tasks.appendChild(newTaskBtn)
         newTaskBtn.addEventListener('click', () => {
             formDisplay.style.display = "grid";
+            displayForm(project);
         })
+    }
+
+    const displayForm = function (project, task = false) {
+        formDisplay.style.display = "grid";
+        form.elements['project'].value = project
+        if (task) {
+            formTitle.textContent = "Edit task"
+            form.elements['name'].value = task.name;
+            form.elements['description'].value = task.description;
+            let priority = document.querySelector(`#${task.priority}`)
+            setFormPriority(priority);
+
+            // to give submit event listener the index of task being edited
+            form.setAttribute('index', taskMaster.projList[project].indexOf(task))
+
+        } else {
+            formTitle.textContent = 'New Task';
+            form.elements['name'].value = '';
+            form.elements['description'].value = '';
+            let priority = document.querySelector(`#medium`)
+            setFormPriority(priority);
+
+        }
+        
     }
 
     const loadProjList = function () {
         sidebar.textContent = ""
+        formProjectOptions.textContent = ""
         let projArray = (Object.keys(taskMaster.projList))
         projArray.forEach(project => {
             const divProject = document.createElement('div')
             const divProjectTitle = document.createElement('div')
+            const datalistOption = document.createElement('option')
            
             divProject.classList.add('project')
             divProjectTitle.textContent = project
+            divProject.appendChild(divProjectTitle)
 
             if (!(project == 'default')) {
                 //dont allow deletion of default project
-                console.log('test');
                 const divProjectDelete = document.createElement('span')
                 divProjectDelete.classList.add('material-symbols-outlined')
                 divProjectDelete.textContent = 'delete'
@@ -166,21 +198,27 @@ const Ui = (function () {
                         loadProjList()
                     }
                 
-            })
+                })
             }
 
-            divProject.appendChild(divProjectTitle)
-
-            
             sidebar.appendChild(divProject);
 
             divProjectTitle.addEventListener('click', () => {
                 loadTaskList(project);
             })
 
+            datalistOption.setAttribute('value', project);
+            formProjectOptions.appendChild(datalistOption);
 
         })
-    }
+    };
+
+    const setFormPriority = function (priobtn) {
+        priorities.forEach((btn) => {
+            btn.classList.remove("highlighted")
+        })
+        priobtn.classList.add('highlighted')
+}
 
     const loadListeners = function () {
 
@@ -191,10 +229,17 @@ const Ui = (function () {
             let duedate = (form.elements['duedate'].value);
             let priority = document.querySelector('.highlighted').id;
             let proj = (form.elements['project'].value);
-            let t = taskMaster.task(name, description, duedate, priority);
+            let newT = taskMaster.task(name, description, duedate, priority);
+
+            if (formTitle.textContent == 'Edit task') {
+                let taskindex = form.getAttribute('index')
+                taskMaster.editTask(newT, proj, taskindex);
+            } else {
+                taskMaster.addTask(newT, proj);
+            }
 
             event.preventDefault();
-            taskMaster.addTask(t, proj);
+            
             form.reset();
             formDisplay.style.display = "none";
             loadTaskList(proj);
@@ -203,11 +248,8 @@ const Ui = (function () {
         })
 
         priorities.forEach((btn) => {
-        btn.addEventListener('click', () => {
-            priorities.forEach((btnz) => {
-                    btnz.classList.remove("highlighted")
-            })
-            btn.classList.add('highlighted')
+            btn.addEventListener('click', () => {
+                setFormPriority(btn);
             })
         })
 
