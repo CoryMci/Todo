@@ -181,6 +181,14 @@ const Ui = (function () {
         }
       });
     });
+    const newTaskBtn = document.createElement("div");
+    newTaskBtn.classList.add("newtask", "material-symbols-outlined");
+    newTaskBtn.textContent = "add";
+    tasks.appendChild(newTaskBtn);
+    newTaskBtn.addEventListener("click", () => {
+      formDisplay.style.display = "grid";
+      displayForm("default");
+    });
   };
 
   const displayForm = function (project, task = false) {
@@ -216,6 +224,7 @@ const Ui = (function () {
     sidebar.appendChild(sidebarAllTasks);
     sidebarAllTasks.addEventListener("click", () => {
       LoadAllTasks();
+      setSelectedProject(sidebarAllTasks);
     });
 
     const sidebarDates = document.createElement("div");
@@ -228,6 +237,7 @@ const Ui = (function () {
     sidebarLate.textContent = "Overdue";
     sidebarLate.addEventListener("click", () => {
       LoadAllTasks("overdue");
+      setSelectedProject(sidebarLate);
     });
     sidebarDates.appendChild(sidebarLate);
 
@@ -237,6 +247,7 @@ const Ui = (function () {
     sidebarToday.textContent = "Today";
     sidebarToday.addEventListener("click", () => {
       LoadAllTasks("today");
+      setSelectedProject(sidebarToday);
     });
     sidebarDates.appendChild(sidebarToday);
 
@@ -246,6 +257,7 @@ const Ui = (function () {
     sidebarWeek.textContent = "This week";
     sidebarWeek.addEventListener("click", () => {
       LoadAllTasks("week");
+      setSelectedProject(sidebarWeek);
     });
     sidebarDates.appendChild(sidebarWeek);
 
@@ -255,6 +267,7 @@ const Ui = (function () {
     sidebarMonth.textContent = "This month";
     sidebarMonth.addEventListener("click", () => {
       LoadAllTasks("month");
+      setSelectedProject(sidebarMonth);
     });
     sidebarDates.appendChild(sidebarMonth);
 
@@ -275,6 +288,13 @@ const Ui = (function () {
         divProjectDelete.textContent = "delete";
         divProject.appendChild(divProjectDelete);
 
+        sidebar.appendChild(divProject);
+
+        divProjectTitle.addEventListener("click", () => {
+          loadProject(project);
+          setSelectedProject(divProject);
+        });
+
         divProjectDelete.addEventListener("click", () => {
           if (
             window.confirm(
@@ -282,21 +302,23 @@ const Ui = (function () {
             )
           ) {
             taskMaster.removeProject(project);
-            loadProject("default");
+            LoadAllTasks();
             loadProjList();
           }
         });
       }
 
-      sidebar.appendChild(divProject);
-
-      divProjectTitle.addEventListener("click", () => {
-        loadProject(project);
-      });
-
       datalistOption.setAttribute("value", project);
       formProjectOptions.appendChild(datalistOption);
     });
+  };
+
+  const setSelectedProject = function (selectedproject) {
+    const sidebarItems = document.querySelectorAll(".project");
+    sidebarItems.forEach((item) => {
+      item.classList.remove("active");
+    });
+    selectedproject.classList.add("active");
   };
 
   const setFormPriority = function (priobtn) {

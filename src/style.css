@@ -45,6 +45,14 @@ body {
     cursor: pointer;
 }
 
+.project {
+    text-indent: 1em;
+}
+
+.project.active {
+    background-color: rgb(153, 153, 185);
+}
+
 .sidebar-dates {
     width: 80%;
     justify-self: center;
