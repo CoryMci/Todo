@@ -142,22 +142,26 @@ const Ui = (function () {
 
   const loadProject = function (project) {
     //taskList must be array of tasks
-    console.log(taskMaster.projList);
     tasks.innerHTML = "";
-    taskMaster.projList[project].forEach((task) => {
-      loadTask(task, project, taskMaster.projList[project].indexOf(task));
-      //indexof can be loaded in loadtask function instead of here --refactor
-    });
+    if (project == "default") {
+      LoadAllTasks();
+    } else {
+      taskMaster.projList[project].forEach((task) => {
+        loadTask(task, project, taskMaster.projList[project].indexOf(task));
 
-    //load new task btn at end of list
-    const newTaskBtn = document.createElement("div");
-    newTaskBtn.classList.add("newtask", "material-symbols-outlined");
-    newTaskBtn.textContent = "add";
-    tasks.appendChild(newTaskBtn);
-    newTaskBtn.addEventListener("click", () => {
-      formDisplay.style.display = "grid";
-      displayForm(project);
-    });
+        //load new task btn at end of list
+        const newTaskBtn = document.createElement("div");
+        newTaskBtn.classList.add("newtask", "material-symbols-outlined");
+        newTaskBtn.textContent = "add";
+        tasks.appendChild(newTaskBtn);
+        newTaskBtn.addEventListener("click", () => {
+          formDisplay.style.display = "grid";
+          displayForm(project);
+        });
+
+        //indexof can be loaded in loadtask function instead of here --refactor
+      });
+    }
   };
 
   const LoadAllTasks = function (date = "") {
@@ -349,7 +353,12 @@ const Ui = (function () {
 
       form.reset();
       formDisplay.style.display = "none";
-      loadProject(proj);
+      if (proj == "default") {
+        LoadAllTasks();
+      } else {
+        loadProject(proj);
+      }
+
       loadProjList();
     });
 
@@ -405,14 +414,14 @@ const storage = (function () {
 })();
 
 if (storage.storageAvailable("localStorage")) {
-  taskMaster.projList = JSON.parse(localStorage.getItem("ToDo"));
+  if (localStorage.length > 0) {
+    taskMaster.projList = JSON.parse(localStorage.getItem("ToDo"));
+  }
   console.log(taskMaster.projList);
 } else {
-  taskMaster.taskList = [];
   console.log("s");
 }
 
 Ui.loadListeners();
-Ui.loadTaskList("default");
 Ui.loadProjList();
 Ui.loadDate("");
